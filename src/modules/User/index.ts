@@ -1,12 +1,14 @@
 import { Request, Response } from "express";
-import {PrismaClient} from "@prisma/client";
-import bcrypt, { hash } from "bcryptjs";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import jwt, { Secret } from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
+const secret = process.env.AUTH_SECRET;
+
 interface CustomRequest extends Request {
-    userData: any;
+  userData: any;
 }
 
 export = {
@@ -148,5 +150,29 @@ export = {
     res.status(200).send({ success: "Senha atualizada com sucesso!" });
   },
 
-//   async login(req: Request, res: Response){}
+  async login(req: Request, res: Response) {
+    const { email, password } = req.body;
+
+    const user = await prisma.tb_user.findFirst({
+      where: { email },
+    });
+
+    if (!user || user.deleted_at !== null)
+      return res.status(401).send({ error: "Usuário não encontrado!" });
+
+    if (!(await bcrypt.compare(password, user.password)))
+      return res.status(401).send({ error: "Senha incorreta!" });
+
+    const userWithoutPasssword = await prisma.tb_user.findFirst({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        password: false,
+      },
+    });
+
+    const token = jwt.sign({ ...user }, secret as Secret);
+    res.status(200).send({ token, user: userWithoutPasssword });
+  },
 };

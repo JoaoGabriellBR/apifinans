@@ -24,8 +24,8 @@ model tb_bill {
   id          Int           @id @default(autoincrement())
   value       Int
   description String
-  author      tb_user       @relation(fields: [authorId], references: [id])
-  authorId    Int
+  author_id   Int
+  author      tb_user       @relation(fields: [author_id], references: [id])
   expenses    tb_expenses[]
   revenues    tb_revenues[]
   created_at  DateTime      @default(now())
@@ -38,13 +38,13 @@ model tb_expenses {
   value       Int
   description String
   status      Boolean   @default(false)
-  author      tb_user   @relation(fields: [authorId], references: [id])
-  authorId    Int
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
   deleted_at  DateTime?
-  tb_bill     tb_bill?  @relation(fields: [tb_billId], references: [id])
-  tb_billId   Int?
+  author_id   Int
+  tb_bill_id  Int?
+  author      tb_user   @relation(fields: [author_id], references: [id])
+  tb_bill     tb_bill?  @relation(fields: [tb_bill_id], references: [id])
 }
 
 model tb_revenues {
@@ -52,11 +52,11 @@ model tb_revenues {
   value       Int
   description String
   status      Boolean   @default(false)
-  author      tb_user   @relation(fields: [authorId], references: [id])
-  authorId    Int
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
   deleted_at  DateTime?
-  tb_bill     tb_bill?  @relation(fields: [tb_billId], references: [id])
-  tb_billId   Int?
+  author_id   Int
+  tb_bill_id  Int?
+  author      tb_user   @relation(fields: [author_id], references: [id])
+  tb_bill     tb_bill?  @relation(fields: [tb_bill_id], references: [id])
 }
