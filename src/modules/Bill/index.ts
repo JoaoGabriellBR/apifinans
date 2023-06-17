@@ -38,6 +38,63 @@ export = {
     res.status(201).send({ success: true, response });
   },
 
+  async updateBill(req: Request, res: Response) {
+    const { userData } = req;
+    const { id } = req.params;
+    const { value, description } = req.body;
+
+    const billExists = await prisma.tb_bill.findFirst({
+      where: { id: parseInt(id), deleted_at: null },
+    });
+
+    if (!billExists || billExists.deleted_at !== null) {
+      return res.status(404).send({ error: "Conta não encontrada." });
+    }
+
+    const response = await prisma.tb_bill.update({
+      where: { id: parseInt(id) },
+      data: {
+        value,
+        description,
+        author: { connect: { id: 1 } },
+        // author: { connect: { id: userData?.id } },
+      },
+      include: {
+        author: { select: userWithoutPassword },
+        expenses: true,
+        revenues: true,
+      },
+    });
+
+    res.status(200).send({ success: true, response });
+  },
+
+  async deleteBill(req: Request, res: Response) {
+    const { userData } = req;
+    const { id } = req.params;
+
+    const billExists = await prisma.tb_bill.findFirst({
+      where: { id: parseInt(id) },
+    });
+
+    if (!billExists || billExists.deleted_at !== null) {
+      return res.status(404).send({ error: "Conta não encontrada." });
+    }
+
+    // SE TIVER RECEITAS OU DESPESAS, FALAR AO USUÁRIO QUE TODAS AS DESPESAS E RECEITAS DO MESMO SERÃO DELETADOS
+
+    await prisma.tb_bill.update({
+      where: { id: parseInt(id) },
+      data: {
+        deleted_at: new Date(),
+      },
+    });
+
+    res
+      .status(200)
+      .send({ success: true, message: "A conta foi excluída com sucesso." });
+  },
+
   async getAllBills(req: Request, res: Response) {
     const { userData } = req;
     const { id } = req.params;

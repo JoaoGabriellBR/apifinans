@@ -1,6 +1,8 @@
 import { Router } from "express";
 import User from "./modules/User";
 import Bill from "./modules/Bill";
+import Expense from "./modules/Expense";
+// import Revenue from "./modules/Revenue";
 import decodeUserToken from "./middlewares";
 
 const routes = Router();
@@ -17,13 +19,17 @@ routes.patch("/user/change-password", User.changePassword);
 
 routes.post("/bill/create", Bill.createBill);
 // routes.get("/bill/get/:id", Bill.getBill);
+
+
+// RETIRAR O /:ID DE /bill/get/:id NA FUNÇÃO ABAIXO, POIS ELE SERÁ PEGO DE USERDATA.ID
 routes.get("/bill/get/:id", Bill.getAllBills);
-// routes.patch("/bill/update/:id", User.updateBill);
-// routes.patch("/bill/delete/:id", User.deleteBill);
+
+routes.patch("/bill/update/:id", Bill.updateBill);
+routes.patch("/bill/delete/:id", Bill.deleteBill);
 
 // EXPENSES
 
-// routes.post("/expense/create", Expense.createExpense);
+routes.post("/expense/create/:id", Expense.createExpense);
 // routes.post("/pay-expense/:id", Expense.payExpense);
 // routes.get("/expense/get/:id", Expense.getExpense);
 // routes.get("/expense/get", Revenue.getAllExpenses)
