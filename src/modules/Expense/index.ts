@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 
 // No momento que a pessoa adicionar um Nova Despesa. Averiguar se ela possui uma CONTA. Caso não possua. Ao criar a despesa criar automaticamente uma conta Carteira!
+// Adicionar blocos Try catch a todas as funções.
 
 const prisma = new PrismaClient();
 
@@ -105,5 +106,59 @@ export = {
     });
 
     res.status(200).send({ success: true, response });
+  },
+
+  async updateExpense(req: Request, res: Response) {
+    const { userData } = req;
+    const { id } = req.params;
+    const { value, description, status } = req.body;
+
+    const expenseExists = await prisma.tb_expense.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!expenseExists || expenseExists.deleted_at !== null) {
+      return res.status(404).send({ error: "Despesa não encontrada." });
+    }
+
+    const response = await prisma.tb_expense.update({
+      where: { id: expenseExists.id },
+      data: {
+        value,
+        description,
+        status: !!status,
+        // author: { connect: { id: userData.id } },
+        author: { connect: { id: 1 } }
+      },
+      include: {
+        author: { select: userWithoutPassword },
+      },
+    });
+
+    res.status(200).send({ success: true, response });
+  },
+
+  async deleteExpense(req: Request, res: Response) {
+    const { userData } = req;
+    const { id } = req.params;
+
+    const expenseExists = await prisma.tb_expense.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!expenseExists || expenseExists.deleted_at !== null) {
+      return res.status(404).send({ error: "Despesa não encontrada." });
+    }
+
+    await prisma.tb_expense.update({
+      where: { id: expenseExists.id },
+      data: {
+        deleted_at: new Date(),
+      },
+    });
+
+    res
+      .status(200)
+      .send({ success: true, message: "Despesa excluída com sucesso." });
   },
 };
