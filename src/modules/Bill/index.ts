@@ -25,8 +25,7 @@ export = {
       data: {
         value,
         description,
-        author: { connect: { id: 1 } },
-        // author: { connect: { id: userData?.id } },
+        author: { connect: { id: userData?.id } },
       },
       include: {
         author: { select: userWithoutPassword },
@@ -56,8 +55,7 @@ export = {
       data: {
         value,
         description,
-        author: { connect: { id: 1 } },
-        // author: { connect: { id: userData?.id } },
+        author: { connect: { id: userData?.id } },
       },
       include: {
         author: { select: userWithoutPassword },
@@ -74,14 +72,14 @@ export = {
     const { id } = req.params;
 
     const billExists = await prisma.tb_bill.findFirst({
-      where: { id: parseInt(id) },
+      where: { id: parseInt(id), id_author: userData?.id  },
     });
 
     if (!billExists || billExists.deleted_at !== null) {
       return res.status(404).send({ error: "Conta não encontrada." });
     }
 
-    // SE TIVER RECEITAS OU DESPESAS, FALAR AO USUÁRIO QUE TODAS AS DESPESAS E RECEITAS DO MESMO SERÃO DELETADOS
+    // SE TIVER RECEITAS OU DESPESAS, FALAR AO USUÁRIO QUE TODAS AS DESPESAS E RECEITAS DO MESMO SERÃO DELETADAS
 
     await prisma.tb_bill.update({
       where: { id: parseInt(id) },
@@ -97,12 +95,10 @@ export = {
 
   async getAllBills(req: Request, res: Response) {
     const { userData } = req;
-    const { id } = req.params;
 
     const response = await prisma.tb_bill.findMany({
       where: {
-        // id_author: userData?.id,
-        id_author: parseInt(id),
+        id_author: userData?.id,
         deleted_at: null,
       },
       orderBy: { created_at: "desc" },
