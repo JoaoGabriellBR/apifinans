@@ -6,14 +6,14 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const userWithoutPassword = {
-    id: true,
-    name: true,
-    email: true,
-    password: false,
-    created_at: true,
-    updated_at: true,
-    deleted_at: true,
-  };
+  id: true,
+  name: true,
+  email: true,
+  password: false,
+  created_at: true,
+  updated_at: true,
+  deleted_at: true,
+};
 
 export = {
   async createExpense(req: Request, res: Response) {
@@ -26,7 +26,7 @@ export = {
         .status(400)
         .send({ error: "Forneça todos os dados solicitados!" });
 
-    const response = await prisma.tb_expenses.create({
+    const response = await prisma.tb_expense.create({
       data: {
         value,
         description,
@@ -39,5 +39,71 @@ export = {
     });
 
     res.status(201).send({ success: true, response });
+  },
+
+  async payExpense(req: Request, res: Response) {
+    const { userData } = req;
+    const { id } = req.params;
+
+    const expenseExists = await prisma.tb_expense.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!expenseExists || expenseExists.deleted_at !== null) {
+      return res.status(404).send({ error: "Despesa não encontrada." });
+    }
+
+    await prisma.tb_expense.update({
+      where: { id: parseInt(id) },
+      data: { status: true },
+    });
+
+    res
+      .status(200)
+      .send({ success: true, message: "Despesa paga com sucesso." });
+  },
+
+  async getExpense(req: Request, res: Response) {
+    const { userData } = req;
+    const { id } = req.params;
+
+    const expenseExists = await prisma.tb_expense.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!expenseExists || expenseExists.deleted_at !== null) {
+      return res.status(404).send({ error: "Despesa não encontrada." });
+    }
+
+    const response = await prisma.tb_expense.findFirst({
+      where: {
+        id: expenseExists.id,
+        deleted_at: null,
+      },
+      include: {
+        author: { select: userWithoutPassword },
+      },
+    });
+
+    res.status(200).json({ success: true, response });
+  },
+
+  async getAllExpenses(req: Request, res: Response) {
+    const { userData } = req;
+    const { id } = req.params;
+
+    const response = await prisma.tb_expense.findMany({
+      where: {
+        // id_author: userData?.id,
+        id: parseInt(id),
+        deleted_at: null,
+      },
+      orderBy: { created_at: "desc" },
+      include: {
+        author: { select: userWithoutPassword },
+      },
+    });
+
+    res.status(200).send({ success: true, response });
   },
 };
