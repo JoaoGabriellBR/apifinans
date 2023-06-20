@@ -8,55 +8,55 @@ datasource db {
 }
 
 model tb_user {
-  id          Int           @id @default(autoincrement())
-  name        String
-  email       String
-  password    String
-  created_at  DateTime      @default(now())
-  updated_at  DateTime      @updatedAt
-  deleted_at  DateTime?
-  tb_bill     tb_bill[]
-  tb_expenses tb_expenses[]
-  tb_revenues tb_revenues[]
+  id         Int          @id @default(autoincrement())
+  name       String
+  email      String
+  password   String
+  created_at DateTime     @default(now())
+  updated_at DateTime     @updatedAt
+  deleted_at DateTime?
+  tb_bill    tb_bill[]
+  tb_expense tb_expense[]
+  tb_revenue tb_revenue[]
 }
 
 model tb_bill {
-  id          Int           @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   value       Int
   description String
-  author_id   Int
-  author      tb_user       @relation(fields: [author_id], references: [id])
-  expenses    tb_expenses[]
-  revenues    tb_revenues[]
-  created_at  DateTime      @default(now())
-  updated_at  DateTime      @updatedAt
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
   deleted_at  DateTime?
+  id_author   Int
+  author      tb_user      @relation(fields: [id_author], references: [id])
+  expenses    tb_expense[]
+  revenues    tb_revenue[]
 }
 
-model tb_expenses {
+model tb_expense {
   id          Int       @id @default(autoincrement())
+  id_author   Int
+  id_bill     Int?
   value       Int
   description String
   status      Boolean   @default(false)
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
   deleted_at  DateTime?
-  author_id   Int
-  tb_bill_id  Int?
-  author      tb_user   @relation(fields: [author_id], references: [id])
-  tb_bill     tb_bill?  @relation(fields: [tb_bill_id], references: [id])
+  author      tb_user   @relation(fields: [id_author], references: [id])
+  tb_bill     tb_bill?  @relation(fields: [id_bill], references: [id])
 }
 
-model tb_revenues {
+model tb_revenue {
   id          Int       @id @default(autoincrement())
+  id_author   Int
+  id_bill     Int?
   value       Int
   description String
   status      Boolean   @default(false)
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
   deleted_at  DateTime?
-  author_id   Int
-  tb_bill_id  Int?
-  author      tb_user   @relation(fields: [author_id], references: [id])
-  tb_bill     tb_bill?  @relation(fields: [tb_bill_id], references: [id])
+  author      tb_user   @relation(fields: [id_author], references: [id])
+  tb_bill     tb_bill?  @relation(fields: [id_bill], references: [id])
 }
