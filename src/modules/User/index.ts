@@ -7,6 +7,13 @@ const prisma = new PrismaClient();
 
 const secret = process.env.AUTH_SECRET;
 
+const userWithoutPasssword = {
+  id: true,
+  name: true,
+  email: true,
+  password: false,
+};
+
 interface CustomRequest extends Request {
   userData: any;
 }
@@ -37,12 +44,7 @@ export = {
         email,
         password: hashedPassword,
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        password: false,
-      },
+      select: userWithoutPasssword,
     });
 
     res.status(201).json(response);
@@ -65,12 +67,7 @@ export = {
         name,
         email,
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        password: false,
-      },
+      select: userWithoutPasssword,
     });
 
     res.status(200).json(response);
@@ -88,12 +85,7 @@ export = {
 
     const response = await prisma.tb_user.findUnique({
       where: { id: userExists.id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        password: false,
-      },
+      select: userWithoutPasssword,
     });
 
     res.status(200).json(response);
