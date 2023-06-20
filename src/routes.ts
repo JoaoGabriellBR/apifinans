@@ -30,9 +30,13 @@ routes.patch("/bill/delete/:id", Bill.deleteBill);
 // EXPENSES
 
 routes.post("/expense/create/:id", Expense.createExpense);
-// routes.post("/pay-expense/:id", Expense.payExpense);
+routes.patch("/pay-expense/:id", Expense.payExpense);
 // routes.get("/expense/get/:id", Expense.getExpense);
-// routes.get("/expense/get", Revenue.getAllExpenses)
+
+// RETIRAR O /:ID DE /expense/get/:id NA FUNÇÃO ABAIXO, POIS ELE SERÁ PEGO DE USERDATA.ID
+routes.get("/expense/get/:id", Expense.getAllExpenses);
+
+
 // routes.patch("/expense/update/:id", Expense.updateExpense);
 // routes.patch("/expense/delete/:id", Expense.deleteExpense);
 
@@ -40,7 +44,7 @@ routes.post("/expense/create/:id", Expense.createExpense);
 
 // routes.post("/revenue/create", Revenue.createBill);
 // routes.get("/revenue/get/:id", Revenue.getRevenue);
-// routes.get("/revenue/get", Revenue.getAllRevenues)
+// routes.get("/revenue/get", Revenue.getAllRevenues);
 // routes.patch("/revenue/update/:id", Revenue.updateRevenue);
 // routes.patch("/revenue/delete/:id", Revenue.deleteRevenue);
 

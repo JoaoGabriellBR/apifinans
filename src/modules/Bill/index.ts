@@ -101,8 +101,8 @@ export = {
 
     const response = await prisma.tb_bill.findMany({
       where: {
-        // author_id: userData?.id,
-        author_id: parseInt(id),
+        // id_author: userData?.id,
+        id_author: parseInt(id),
         deleted_at: null,
       },
       orderBy: { created_at: "desc" },
