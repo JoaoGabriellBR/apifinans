@@ -21,7 +21,7 @@ export = {
     try {
       const { userData } = req;
       const { value, description, status } = req.body;
-      const { id } = req.params; // id da conta;
+      const id = String(req.headers?.id_bill); // id da conta;
 
       if (!value || !description)
         return res
@@ -33,8 +33,7 @@ export = {
           value,
           description,
           status: !!status,
-          author: { connect: { id: 1 } },
-          // author: { connect: { id: userData.id } },
+          author: { connect: { id: userData.id } },
           tb_bill: { connect: { id: parseInt(id) } },
         },
         include: { author: { select: userWithoutPassword } },
@@ -92,6 +91,7 @@ export = {
       const response = await prisma.tb_expense.findFirst({
         where: {
           id: expenseExists.id,
+          id_author: userData?.id,
           deleted_at: null,
         },
         include: {
@@ -109,12 +109,10 @@ export = {
   async getAllExpenses(req: Request, res: Response) {
     try {
       const { userData } = req;
-      const { id } = req.params;
 
       const response = await prisma.tb_expense.findMany({
         where: {
-          // id_author: userData?.id,
-          id: parseInt(id),
+          id_author: userData?.id,
           deleted_at: null,
         },
         orderBy: { created_at: "desc" },
@@ -152,8 +150,7 @@ export = {
           value,
           description,
           status: !!status,
-          // author: { connect: { id: userData.id } },
-          author: { connect: { id: 1 } },
+          author: { connect: { id: userData?.id } },
         },
         include: {
           author: { select: userWithoutPassword },
@@ -174,8 +171,8 @@ export = {
       const { userData } = req;
       const { id } = req.params;
 
-      const expenseExists = await prisma.tb_expense.findUnique({
-        where: { id: parseInt(id) },
+      const expenseExists = await prisma.tb_expense.findFirst({
+        where: { id: parseInt(id), id_author: userData?.id },
       });
 
       if (!expenseExists || expenseExists.deleted_at !== null) {
