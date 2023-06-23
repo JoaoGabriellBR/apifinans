@@ -2,10 +2,11 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt, { Secret } from "jsonwebtoken";
+import generateSecretKey from "../../utils/secretKey";
 
 const prisma = new PrismaClient();
 
-const secret = process.env.AUTH_SECRET;
+const secretKey = generateSecretKey(32);
 
 const userWithoutPasssword = {
   id: true,
@@ -22,10 +23,28 @@ export = {
   async createUser(req: Request, res: Response) {
     const { name, email, password } = req.body;
 
-    if (!name || !email || !password)
+    if (!name) {
+      return res.status(400).send({ error: "Preencha o campo de nome." });
+    }
+
+    if (!email) {
+      return res.status(400).send({ error: "Preencha o campo de e-mail." });
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+      return res.status(400).send({ error: "Digite um e-mail válido." });
+    }
+
+    if (!password) {
+      return res.status(400).send({ error: "Preencha o campo de senha." });
+    }
+
+    if (password.length < 8) {
       return res
         .status(400)
-        .send({ error: "Envie todos os dados solicitados!" });
+        .send({ error: "A senha deve conter no mínimo 8 caracteres." });
+    }
 
     const emailExists = await prisma.tb_user.findFirst({
       where: { email: email },
@@ -60,6 +79,11 @@ export = {
 
     if (!userExists)
       return res.status(404).send({ error: "Usuário não encontrado!" });
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+      return res.status(400).send({ error: "Digite um e-mail válido." });
+    }
 
     const response = await prisma.tb_user.update({
       where: { id: userExists.id },
@@ -124,6 +148,12 @@ export = {
     if (!userExists || userExists.deleted_at !== null)
       return res.status(404).send({ error: "Usuário não encontrado!" });
 
+    if (newPassword.length < 8) {
+      return res
+        .status(400)
+        .send({ error: "A nova senha deve conter no mínimo 8 caracteres." });
+    }
+
     if (!(await bcrypt.compare(oldPassword, userExists.password)))
       return res.status(400).send({ error: "Senha incorreta!" });
 
@@ -143,32 +173,46 @@ export = {
   },
 
   async login(req: Request, res: Response) {
-    const { email, password } = req.body;
+    try {
+      const { email, password } = req.body;
 
-    if(!email || !password){
-      return res.status(400).send({ error: "Preencha todos os campos vazios." })
+      if (!email) {
+        return res.status(400).send({ error: "Preencha o campo de e-mail." });
+      }
+
+      if (!password) {
+        return res.status(400).send({ error: "Preencha o campo de senha." });
+      }
+
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(email)) {
+        return res.status(400).send({ error: "Digite um e-mail válido." });
+      }
+
+      const user = await prisma.tb_user.findFirst({
+        where: { email },
+      });
+
+      if (!user || user.deleted_at !== null)
+        return res.status(401).send({ error: "Usuário não encontrado!" });
+
+      if (!(await bcrypt.compare(password, user.password)))
+        return res.status(401).send({ error: "Senha incorreta!" });
+
+      const userWithoutPasssword = await prisma.tb_user.findFirst({
+        where: { email },
+        select: {
+          id: true,
+          email: true,
+          password: false,
+        },
+      });
+
+      const token = jwt.sign({ ...user }, secretKey as Secret);
+      res.status(200).send({ token, user: userWithoutPasssword });
+    } catch (error: any) {
+      console.log(error);
+      return res.status(500).send({ error: "Não foi possível realizar o login." })
     }
-
-    const user = await prisma.tb_user.findFirst({
-      where: { email },
-    });
-
-    if (!user || user.deleted_at !== null)
-      return res.status(401).send({ error: "Usuário não encontrado!" });
-
-    if (!(await bcrypt.compare(password, user.password)))
-      return res.status(401).send({ error: "Senha incorreta!" });
-
-    const userWithoutPasssword = await prisma.tb_user.findFirst({
-      where: { email },
-      select: {
-        id: true,
-        email: true,
-        password: false,
-      },
-    });
-
-    const token = jwt.sign({ ...user }, secret as Secret);
-    res.status(200).send({ token, user: userWithoutPasssword });
   },
 };
