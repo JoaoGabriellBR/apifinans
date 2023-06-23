@@ -145,6 +145,10 @@ export = {
   async login(req: Request, res: Response) {
     const { email, password } = req.body;
 
+    if(!email || !password){
+      return res.status(400).send({ error: "Preencha todos os campos vazios." })
+    }
+
     const user = await prisma.tb_user.findFirst({
       where: { email },
     });
