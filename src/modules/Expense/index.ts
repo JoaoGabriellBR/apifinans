@@ -16,8 +16,14 @@ const userWithoutPassword = {
   deleted_at: true,
 };
 
+interface CustomRequest extends Request {
+  userData?: {
+    id?: number;
+  };
+}
+
 export = {
-  async createExpense(req: Request, res: Response) {
+  async createExpense(req: CustomRequest, res: Response) {
     try {
       const { userData } = req;
       const { value, description, status } = req.body;
@@ -33,7 +39,7 @@ export = {
           value,
           description,
           status: !!status,
-          author: { connect: { id: userData.id } },
+          author: { connect: { id: userData?.id } },
           tb_bill: { connect: { id: parseInt(id) } },
         },
         include: { author: { select: userWithoutPassword } },
@@ -46,7 +52,7 @@ export = {
     }
   },
 
-  async payExpense(req: Request, res: Response) {
+  async payExpense(req: CustomRequest, res: Response) {
     try {
       const { userData } = req;
       const { id } = req.params;
@@ -75,7 +81,7 @@ export = {
     }
   },
 
-  async getExpense(req: Request, res: Response) {
+  async getExpense(req: CustomRequest, res: Response) {
     try {
       const { userData } = req;
       const { id } = req.params;
@@ -106,7 +112,7 @@ export = {
     }
   },
 
-  async getAllExpenses(req: Request, res: Response) {
+  async getAllExpenses(req: CustomRequest, res: Response) {
     try {
       const { userData } = req;
 
@@ -130,7 +136,7 @@ export = {
     }
   },
 
-  async updateExpense(req: Request, res: Response) {
+  async updateExpense(req: CustomRequest, res: Response) {
     try {
       const { userData } = req;
       const { id } = req.params;
@@ -166,7 +172,7 @@ export = {
     }
   },
 
-  async deleteExpense(req: Request, res: Response) {
+  async deleteExpense(req: CustomRequest, res: Response) {
     try {
       const { userData } = req;
       const { id } = req.params;

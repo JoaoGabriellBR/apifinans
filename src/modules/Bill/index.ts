@@ -13,8 +13,14 @@ const userWithoutPassword = {
   deleted_at: true,
 };
 
+interface CustomRequest extends Request {
+  userData?: {
+    id?: number;
+  };
+}
+
 export = {
-  async createBill(req: Request, res: Response) {
+  async createBill(req: CustomRequest, res: Response) {
     const { userData } = req;
     const { value, description } = req.body;
 
@@ -37,7 +43,7 @@ export = {
     res.status(201).send({ success: true, response });
   },
 
-  async updateBill(req: Request, res: Response) {
+  async updateBill(req: CustomRequest, res: Response) {
     const { userData } = req;
     const { id } = req.params;
     const { value, description } = req.body;
@@ -67,7 +73,7 @@ export = {
     res.status(200).send({ success: true, response });
   },
 
-  async deleteBill(req: Request, res: Response) {
+  async deleteBill(req: CustomRequest, res: Response) {
     const { userData } = req;
     const { id } = req.params;
 
@@ -93,7 +99,7 @@ export = {
       .send({ success: true, message: "A conta foi excluída com sucesso." });
   },
 
-  async getAllBills(req: Request, res: Response) {
+  async getAllBills(req: CustomRequest, res: Response) {
     const { userData } = req;
 
     const response = await prisma.tb_bill.findMany({
