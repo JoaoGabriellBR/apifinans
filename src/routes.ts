@@ -10,12 +10,11 @@ import decodeUserToken from "./middlewares";
 const routes = Router();
 
 // USER
-
 routes.post("/user/create", User.createUser);
-routes.get("/user/get/:id", User.getUser);
-routes.patch("/user/update/:id", User.updateUser);
-routes.patch("/user/delete/:id", User.deleteUser);
-routes.patch("/user/change-password", User.changePassword);
+routes.get("/user/me", decodeUserToken, User.getMe);
+routes.patch("/user/update/:id", decodeUserToken, User.updateUser);
+routes.patch("/user/delete/:id", decodeUserToken, User.deleteUser);
+routes.patch("/user/change-password", decodeUserToken, User.changePassword);
 routes.post("/login", User.login);
 
 // BILLS
