@@ -62,7 +62,7 @@ export = {
     const response = await prisma.tb_user.create({
       data: {
         name,
-        email,
+        email: email.toLowerCase(),
         password: hashedPassword,
       },
       select: userWithoutPasssword,
@@ -79,7 +79,7 @@ export = {
     if (!emailPattern.test(email)) {
       return res.status(400).send({ error: "Digite um e-mail válido." });
     }
-    
+
     const userExists = await prisma.tb_user.findUnique({
       where: { id: parseInt(id) },
     });
@@ -178,6 +178,7 @@ export = {
   async login(req: Request, res: Response) {
     try {
       const { email, password } = req.body;
+      const emailUser = email.toLowerCase();
 
       if (!email) {
         return res.status(400).send({ error: "Preencha o campo de e-mail." });
@@ -193,7 +194,7 @@ export = {
       }
 
       const user = await prisma.tb_user.findFirst({
-        where: { email },
+        where: { email: emailUser },
       });
 
       if (!user || user.deleted_at !== null)
@@ -203,7 +204,7 @@ export = {
         return res.status(401).send({ error: "Senha incorreta!" });
 
       const userWithoutPasssword = await prisma.tb_user.findFirst({
-        where: { email },
+        where: { email: emailUser },
         select: {
           id: true,
           email: true,
