@@ -16,7 +16,9 @@ const userWithoutPasssword = {
 };
 
 interface CustomRequest extends Request {
-  userData: any;
+  userData?: {
+    id?: number;
+  };
 }
 
 export = {
@@ -73,6 +75,11 @@ export = {
     const { id } = req.params;
     const { name, email } = req.body;
 
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+      return res.status(400).send({ error: "Digite um e-mail válido." });
+    }
+    
     const userExists = await prisma.tb_user.findUnique({
       where: { id: parseInt(id) },
     });
@@ -80,10 +87,6 @@ export = {
     if (!userExists)
       return res.status(404).send({ error: "Usuário não encontrado!" });
 
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(email)) {
-      return res.status(400).send({ error: "Digite um e-mail válido." });
-    }
 
     const response = await prisma.tb_user.update({
       where: { id: userExists.id },
@@ -97,11 +100,11 @@ export = {
     res.status(200).json(response);
   },
 
-  async getUser(req: Request, res: Response) {
-    const { id } = req.params;
+  async getMe(req: CustomRequest, res: Response) {
+    const { userData } = req;
 
     const userExists = await prisma.tb_user.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: userData?.id },
     });
 
     if (!userExists || userExists.deleted_at !== null)
