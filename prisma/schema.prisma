@@ -22,12 +22,12 @@ model tb_user {
 
 model tb_bill {
   id          Int          @id @default(autoincrement())
-  value       Float?
   description String
   created_at  DateTime     @default(now())
   updated_at  DateTime     @updatedAt
   deleted_at  DateTime?
   id_author   Int
+  balance     Float?
   author      tb_user      @relation(fields: [id_author], references: [id])
   expenses    tb_expense[]
   revenues    tb_revenue[]
@@ -37,12 +37,12 @@ model tb_expense {
   id          Int       @id @default(autoincrement())
   id_author   Int
   id_bill     Int?
-  value       Float?
   description String
   status      Boolean   @default(false)
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
   deleted_at  DateTime?
+  balance     Float?
   author      tb_user   @relation(fields: [id_author], references: [id])
   tb_bill     tb_bill?  @relation(fields: [id_bill], references: [id])
 }
@@ -51,12 +51,12 @@ model tb_revenue {
   id          Int       @id @default(autoincrement())
   id_author   Int
   id_bill     Int?
-  value       Float?
   description String
   status      Boolean   @default(false)
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
   deleted_at  DateTime?
+  balance     Float?
   author      tb_user   @relation(fields: [id_author], references: [id])
   tb_bill     tb_bill?  @relation(fields: [id_bill], references: [id])
 }

@@ -26,17 +26,17 @@ export = {
   async createExpense(req: CustomRequest, res: Response) {
     try {
       const { userData } = req;
-      const { value, description, status } = req.body;
+      const { balance, description, status } = req.body;
       const id = String(req.headers?.id_bill); // id da conta;
 
-      if (!value || !description)
+      if (!balance || !description)
         return res
           .status(400)
           .send({ error: "Forneça todos os dados solicitados!" });
 
       const response = await prisma.tb_expense.create({
         data: {
-          value,
+          balance,
           description,
           status: !!status,
           author: { connect: { id: userData?.id } },
@@ -140,7 +140,7 @@ export = {
     try {
       const { userData } = req;
       const { id } = req.params;
-      const { value, description, status } = req.body;
+      const { balance, description, status } = req.body;
 
       const expenseExists = await prisma.tb_expense.findUnique({
         where: { id: parseInt(id) },
@@ -153,7 +153,7 @@ export = {
       const response = await prisma.tb_expense.update({
         where: { id: expenseExists.id },
         data: {
-          value,
+          balance,
           description,
           status: !!status,
           author: { connect: { id: userData?.id } },

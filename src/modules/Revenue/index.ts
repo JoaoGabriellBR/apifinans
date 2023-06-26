@@ -23,10 +23,10 @@ export = {
   async createRevenue(req: CustomRequest, res: Response) {
     try {
       const { userData } = req;
-      const { value, description, status } = req.body;
+      const { balance, description, status } = req.body;
       const id = String(req.headers?.id_bill); // id da conta;
 
-      if (!value || !description) {
+      if (!balance || !description) {
         return res
           .status(400)
           .send({ error: "Forneça todos os dados solicitados!" });
@@ -34,7 +34,7 @@ export = {
 
       const response = await prisma.tb_revenue.create({
         data: {
-          value,
+          balance,
           description,
           status: !!status,
           author: { connect: { id: userData?.id } },
@@ -109,7 +109,7 @@ export = {
     try {
       const { userData } = req;
       const { id } = req.params;
-      const { value, description, status } = req.body;
+      const { balance, description, status } = req.body;
 
       const revenueExists = await prisma.tb_revenue.findUnique({
         where: { id: parseInt(id) },
@@ -122,7 +122,7 @@ export = {
       const response = await prisma.tb_revenue.update({
         where: { id: parseInt(id) },
         data: {
-          value,
+          balance,
           description,
           status: !!status,
           author: { connect: { id: userData?.id } },

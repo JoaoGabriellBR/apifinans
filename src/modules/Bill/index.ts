@@ -23,14 +23,14 @@ export = {
   async createBill(req: CustomRequest, res: Response) {
     try {
       const { userData } = req;
-      const { value, description } = req.body;
+      const { balance, description } = req.body;
 
-      if (!value || !description)
+      if (!balance || !description)
         res.status(400).send({ error: "Forneça todos os dados solicitados!" });
 
       const response = await prisma.tb_bill.create({
         data: {
-          value,
+          balance,
           description,
           author: { connect: { id: userData?.id, }},
         },
@@ -51,7 +51,7 @@ export = {
   async updateBill(req: CustomRequest, res: Response) {
     const { userData } = req;
     const { id } = req.params;
-    const { value, description } = req.body;
+    const { balance, description } = req.body;
 
     const billExists = await prisma.tb_bill.findFirst({
       where: { id: parseInt(id), deleted_at: null },
@@ -64,7 +64,7 @@ export = {
     const response = await prisma.tb_bill.update({
       where: { id: parseInt(id) },
       data: {
-        value,
+        balance,
         description,
         author: { connect: { id: userData?.id } },
       },
