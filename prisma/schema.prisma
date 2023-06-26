@@ -22,7 +22,7 @@ model tb_user {
 
 model tb_bill {
   id          Int          @id @default(autoincrement())
-  value       Int
+  value       Float?
   description String
   created_at  DateTime     @default(now())
   updated_at  DateTime     @updatedAt
@@ -37,7 +37,7 @@ model tb_expense {
   id          Int       @id @default(autoincrement())
   id_author   Int
   id_bill     Int?
-  value       Int
+  value       Float?
   description String
   status      Boolean   @default(false)
   created_at  DateTime  @default(now())
@@ -51,7 +51,7 @@ model tb_revenue {
   id          Int       @id @default(autoincrement())
   id_author   Int
   id_bill     Int?
-  value       Int
+  value       Float?
   description String
   status      Boolean   @default(false)
   created_at  DateTime  @default(now())

@@ -21,26 +21,31 @@ interface CustomRequest extends Request {
 
 export = {
   async createBill(req: CustomRequest, res: Response) {
-    const { userData } = req;
-    const { value, description } = req.body;
+    try {
+      const { userData } = req;
+      const { value, description } = req.body;
 
-    if (!value || !description)
-      res.status(400).send({ error: "Forneça todos os dados solicitados!" });
+      if (!value || !description)
+        res.status(400).send({ error: "Forneça todos os dados solicitados!" });
 
-    const response = await prisma.tb_bill.create({
-      data: {
-        value,
-        description,
-        author: { connect: { id: userData?.id } },
-      },
-      include: {
-        author: { select: userWithoutPassword },
-        expenses: true,
-        revenues: true,
-      },
-    });
+      const response = await prisma.tb_bill.create({
+        data: {
+          value,
+          description,
+          author: { connect: { id: userData?.id, }},
+        },
+        include: {
+          author: { select: userWithoutPassword },
+          expenses: true,
+          revenues: true,
+        },
+      });
 
-    res.status(201).send({ success: true, response });
+      res.status(201).send({ success: true, response });
+    } catch (error: any) {
+      console.log(error);
+      res.status(500).send({ error: "Ocorreu um erro ao criar a conta." });
+    }
   },
 
   async updateBill(req: CustomRequest, res: Response) {
@@ -78,7 +83,7 @@ export = {
     const { id } = req.params;
 
     const billExists = await prisma.tb_bill.findFirst({
-      where: { id: parseInt(id), id_author: userData?.id  },
+      where: { id: parseInt(id), id_author: userData?.id },
     });
 
     if (!billExists || billExists.deleted_at !== null) {
