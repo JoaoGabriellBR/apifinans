@@ -32,7 +32,7 @@ export = {
         data: {
           balance,
           description,
-          author: { connect: { id: userData?.id, }},
+          author: { connect: { id: userData?.id } },
         },
         include: {
           author: { select: userWithoutPassword },
@@ -49,33 +49,38 @@ export = {
   },
 
   async updateBill(req: CustomRequest, res: Response) {
-    const { userData } = req;
-    const { id } = req.params;
-    const { balance, description } = req.body;
+    try {
+      const { userData } = req;
+      const { id } = req.params;
+      const { balance, description } = req.body;
 
-    const billExists = await prisma.tb_bill.findFirst({
-      where: { id: parseInt(id), deleted_at: null },
-    });
+      const billExists = await prisma.tb_bill.findFirst({
+        where: { id: parseInt(id), deleted_at: null },
+      });
 
-    if (!billExists || billExists.deleted_at !== null) {
-      return res.status(404).send({ error: "Conta não encontrada." });
+      if (!billExists || billExists.deleted_at !== null) {
+        return res.status(404).send({ error: "Conta não encontrada." });
+      }
+
+      const response = await prisma.tb_bill.update({
+        where: { id: parseInt(id) },
+        data: {
+          balance,
+          description,
+          author: { connect: { id: userData?.id } },
+        },
+        include: {
+          author: { select: userWithoutPassword },
+          expenses: true,
+          revenues: true,
+        },
+      });
+
+      res.status(200).send({ success: true, response });
+    } catch (error: any) {
+      console.log(error?.response?.data);
+      res.status(500).send({ error: "Ocorreu um erro ao atualizar a conta." });
     }
-
-    const response = await prisma.tb_bill.update({
-      where: { id: parseInt(id) },
-      data: {
-        balance,
-        description,
-        author: { connect: { id: userData?.id } },
-      },
-      include: {
-        author: { select: userWithoutPassword },
-        expenses: true,
-        revenues: true,
-      },
-    });
-
-    res.status(200).send({ success: true, response });
   },
 
   async deleteBill(req: CustomRequest, res: Response) {
