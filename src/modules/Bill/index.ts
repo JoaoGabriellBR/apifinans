@@ -78,7 +78,7 @@ export = {
 
       res.status(200).send({ success: true, response });
     } catch (error: any) {
-      console.log(error?.response?.data);
+      console.log(error?.response);
       res.status(500).send({ error: "Ocorreu um erro ao atualizar a conta." });
     }
   },

@@ -26,8 +26,8 @@ export = {
   async createExpense(req: CustomRequest, res: Response) {
     try {
       const { userData } = req;
-      const { balance, description, status } = req.body;
-      const id = String(req.headers?.id_bill); // id da conta;
+      const { id_bill, balance, description, status } = req.body;
+      // const id = String(req.headers?.id_bill); // id da conta;
 
       if (!balance || !description)
         return res
@@ -40,7 +40,7 @@ export = {
           description,
           status: !!status,
           author: { connect: { id: userData?.id } },
-          tb_bill: { connect: { id: parseInt(id) } },
+          tb_bill: { connect: { id: parseInt(id_bill) } },
         },
         include: { author: { select: userWithoutPassword } },
       });
