@@ -37,6 +37,7 @@ routes.patch("/expense/delete/:id", decodeUserToken, Expense.deleteExpense);
 // REVENUES
 
 routes.post("/revenue/create", decodeUserToken, Revenue.createRevenue);
+routes.patch("/receive-revenue/:id", decodeUserToken, Revenue.ReceiveRevenue);
 routes.get("/revenue/get/:id", decodeUserToken, Revenue.getRevenue);
 routes.get("/revenue/get", decodeUserToken, Revenue.getAllRevenues);
 routes.patch("/revenue/update/:id", decodeUserToken, Revenue.updateRevenue);

@@ -23,13 +23,22 @@ export = {
   async createRevenue(req: CustomRequest, res: Response) {
     try {
       const { userData } = req;
-      const { balance, description, status } = req.body;
-      const id = String(req.headers?.id_bill); // id da conta;
+      const { id_bill, balance, description, status } = req.body;
 
-      if (!balance || !description) {
+      if (!balance) {
         return res
           .status(400)
-          .send({ error: "Forneça todos os dados solicitados!" });
+          .send({ error: "Forneça um valor inicial." });
+      }
+
+      if (!description) {
+        return res
+          .status(400)
+          .send({ error: "Forneça uma descrição." });
+      }
+
+      if(!id_bill){
+        return res.status(400).send({ error: "Você precisa selecionar uma conta." })
       }
 
       const response = await prisma.tb_revenue.create({
@@ -38,7 +47,7 @@ export = {
           description,
           status: !!status,
           author: { connect: { id: userData?.id } },
-          tb_bill: { connect: { id: parseInt(id) } },
+          tb_bill: { connect: { id: parseInt(id_bill) } },
         },
         include: { author: { select: userWithoutPassword } },
       });
@@ -47,6 +56,35 @@ export = {
     } catch (error: any) {
       console.log(error?.response?.status);
       res.status(500).send({ error: "Ocorreu um erro ao criar a receita." });
+    }
+  },
+
+  async ReceiveRevenue(req: CustomRequest, res: Response) {
+    try {
+      const { userData } = req;
+      const { id } = req.params;
+
+      const revenueExists = await prisma.tb_revenue.findUnique({
+        where: { id: parseInt(id) },
+      });
+
+      if (!revenueExists || revenueExists.deleted_at !== null) {
+        return res.status(404).send({ error: "Receita não encontrada." });
+      }
+
+      await prisma.tb_revenue.update({
+        where: { id: parseInt(id) },
+        data: { status: true },
+      });
+
+      res
+        .status(200)
+        .send({ success: true, message: "Receita recebida com sucesso." });
+    } catch (error: any) {
+      console.log(error?.response?.data);
+      res.status(500).send({
+        error: "Ocorreu um erro ao confirmar o recebimento da despesa.",
+      });
     }
   },
 
