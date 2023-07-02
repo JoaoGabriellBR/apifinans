@@ -25,8 +25,13 @@ export = {
       const { userData } = req;
       const { balance, description } = req.body;
 
-      if (!balance || !description)
-        res.status(400).send({ error: "Forneça todos os dados solicitados!" });
+      if (!balance) {
+        return res.status(400).send({ error: "Forneça um valor inicial." });
+      }
+
+      if (!description) {
+        return res.status(400).send({ error: "Forneça uma descrição." });
+      }
 
       const response = await prisma.tb_bill.create({
         data: {
@@ -53,6 +58,14 @@ export = {
       const { userData } = req;
       const { id } = req.params;
       const { balance, description } = req.body;
+
+      if (!balance) {
+        return res.status(400).send({ error: "Forneça um valor inicial." });
+      }
+
+      if (!description) {
+        return res.status(400).send({ error: "Forneça uma descrição." });
+      }
 
       const billExists = await prisma.tb_bill.findFirst({
         where: { id: parseInt(id), deleted_at: null },
@@ -87,18 +100,38 @@ export = {
     const { userData } = req;
     const { id } = req.params;
 
+    const notDeleted = {
+      deleted_at: null,
+    };
+
     const billExists = await prisma.tb_bill.findFirst({
       where: { id: parseInt(id), id_author: userData?.id },
+      include: {
+        expenses: { where: notDeleted },
+        revenues: { where: notDeleted },
+      },
     });
 
     if (!billExists || billExists.deleted_at !== null) {
       return res.status(404).send({ error: "Conta não encontrada." });
     }
 
-    // SE TIVER RECEITAS OU DESPESAS, FALAR AO USUÁRIO QUE TODAS AS DESPESAS E RECEITAS DO MESMO SERÃO DELETADAS
+    await prisma.tb_expense.updateMany({
+      where: { id_bill: billExists?.id },
+      data: {
+        deleted_at: new Date(),
+      },
+    });
+
+    await prisma.tb_revenue.updateMany({
+      where: { id_bill: billExists?.id },
+      data: {
+        deleted_at: new Date(),
+      },
+    });
 
     await prisma.tb_bill.update({
-      where: { id: parseInt(id) },
+      where: { id: billExists?.id },
       data: {
         deleted_at: new Date(),
       },
@@ -112,6 +145,10 @@ export = {
   async getAllBills(req: CustomRequest, res: Response) {
     const { userData } = req;
 
+    const notDeleted = {
+      deleted_at: null,
+    };
+
     const response = await prisma.tb_bill.findMany({
       where: {
         id_author: userData?.id,
@@ -120,8 +157,8 @@ export = {
       orderBy: { created_at: "desc" },
       include: {
         author: { select: userWithoutPassword },
-        expenses: true,
-        revenues: true,
+        expenses: { where: notDeleted },
+        revenues: { where: notDeleted },
       },
     });
 
