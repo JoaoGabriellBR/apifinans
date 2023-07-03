@@ -87,7 +87,6 @@ export = {
     if (!userExists)
       return res.status(404).send({ error: "Usuário não encontrado!" });
 
-
     const response = await prisma.tb_user.update({
       where: { id: userExists.id },
       data: {
@@ -216,7 +215,9 @@ export = {
       res.status(200).send({ token, user: userWithoutPasssword });
     } catch (error: any) {
       console.log(error);
-      return res.status(500).send({ error: "Não foi possível realizar o login." })
+      return res
+        .status(500)
+        .send({ error: "Não foi possível realizar o login." });
     }
   },
 };

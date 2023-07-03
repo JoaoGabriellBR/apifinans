@@ -29,19 +29,17 @@ export = {
       const { id_bill, balance, description, status } = req.body;
 
       if (!balance) {
-        return res
-          .status(400)
-          .send({ error: "Forneça um valor inicial." });
+        return res.status(400).send({ error: "Forneça um valor inicial." });
       }
 
       if (!description) {
-        return res
-          .status(400)
-          .send({ error: "Forneça uma descrição." });
+        return res.status(400).send({ error: "Forneça uma descrição." });
       }
 
-      if(!id_bill){
-        return res.status(400).send({ error: "Você precisa selecionar uma conta." })
+      if (!id_bill) {
+        return res
+          .status(400)
+          .send({ error: "Você precisa selecionar uma conta." });
       }
 
       const response = await prisma.tb_expense.create({

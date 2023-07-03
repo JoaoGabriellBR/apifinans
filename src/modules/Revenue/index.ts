@@ -26,19 +26,17 @@ export = {
       const { id_bill, balance, description, status } = req.body;
 
       if (!balance) {
-        return res
-          .status(400)
-          .send({ error: "Forneça um valor inicial." });
+        return res.status(400).send({ error: "Forneça um valor inicial." });
       }
 
       if (!description) {
-        return res
-          .status(400)
-          .send({ error: "Forneça uma descrição." });
+        return res.status(400).send({ error: "Forneça uma descrição." });
       }
 
-      if(!id_bill){
-        return res.status(400).send({ error: "Você precisa selecionar uma conta." })
+      if (!id_bill) {
+        return res
+          .status(400)
+          .send({ error: "Você precisa selecionar uma conta." });
       }
 
       const response = await prisma.tb_revenue.create({
@@ -180,26 +178,31 @@ export = {
   },
 
   async deleteRevenue(req: CustomRequest, res: Response) {
-    const { userData } = req;
-    const { id } = req.params;
+    try {
+      const { userData } = req;
+      const { id } = req.params;
 
-    const revenueExists = await prisma.tb_revenue.findFirst({
-      where: { id: parseInt(id), id_author: userData?.id },
-    });
+      const revenueExists = await prisma.tb_revenue.findFirst({
+        where: { id: parseInt(id), id_author: userData?.id },
+      });
 
-    if (!revenueExists || revenueExists.deleted_at !== null) {
-      return res.status(404).send({ error: "Receita não encontrada." });
+      if (!revenueExists || revenueExists.deleted_at !== null) {
+        return res.status(404).send({ error: "Receita não encontrada." });
+      }
+
+      await prisma.tb_revenue.update({
+        where: { id: revenueExists.id },
+        data: {
+          deleted_at: new Date(),
+        },
+      });
+
+      res
+        .status(200)
+        .send({ success: true, message: "Receita excluída com sucesso." });
+    } catch (error: any) {
+      console.log(error.message);
+      res.status(500).send({ error: "Ocorreu um erro ao excluir a receita." });
     }
-
-    await prisma.tb_revenue.update({
-      where: { id: revenueExists.id },
-      data: {
-        deleted_at: new Date(),
-      },
-    });
-
-    res
-      .status(200)
-      .send({ success: true, message: "Receita excluída com sucesso." });
   },
 };

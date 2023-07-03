@@ -10,6 +10,7 @@ import decodeUserToken from "./middlewares";
 const routes = Router();
 
 // USER
+
 routes.post("/user/create", User.createUser);
 routes.get("/user/me", decodeUserToken, User.getMe);
 routes.patch("/user/update/:id", decodeUserToken, User.updateUser);
@@ -20,7 +21,6 @@ routes.post("/login", User.login);
 // BILLS
 
 routes.post("/bill/create", decodeUserToken, Bill.createBill);
-// routes.get("/bill/get/:id", Bill.getBill);
 routes.get("/bill/get", decodeUserToken, Bill.getAllBills);
 routes.patch("/bill/update/:id", decodeUserToken, Bill.updateBill);
 routes.patch("/bill/delete/:id", decodeUserToken, Bill.deleteBill);
@@ -44,4 +44,3 @@ routes.patch("/revenue/update/:id", decodeUserToken, Revenue.updateRevenue);
 routes.patch("/revenue/delete/:id", decodeUserToken, Revenue.deleteRevenue);
 
 export default routes;
-
