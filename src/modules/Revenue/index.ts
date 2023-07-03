@@ -121,7 +121,7 @@ export = {
     try {
       const { userData } = req;
 
-      const response = await prisma.tb_revenue.findMany({
+      const resp = await prisma.tb_revenue.findMany({
         where: {
           id_author: userData?.id,
           deleted_at: null,
@@ -129,8 +129,19 @@ export = {
         orderBy: { created_at: "desc" },
         include: {
           author: { select: userWithoutPassword },
+          tb_bill: {
+            select: {
+              description: true,
+            },
+          },
         },
       });
+
+      const response = resp.map((revenue) => ({
+        ...revenue,
+        bill: revenue.tb_bill?.description || null,
+        tb_bill: undefined, // Remove o objeto tb_bill do resultado principal
+      }));
 
       res.status(200).send({ success: true, response });
     } catch (error: any) {
