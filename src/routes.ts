@@ -4,6 +4,7 @@ import User from "./modules/User";
 import Bill from "./modules/Bill";
 import Expense from "./modules/Expense";
 import Revenue from "./modules/Revenue";
+import TotalBalance from "./modules/TotalBalance";
 
 import decodeUserToken from "./middlewares";
 
@@ -42,5 +43,12 @@ routes.get("/revenue/get/:id", decodeUserToken, Revenue.getRevenue);
 routes.get("/revenue/get", decodeUserToken, Revenue.getAllRevenues);
 routes.patch("/revenue/update/:id", decodeUserToken, Revenue.updateRevenue);
 routes.patch("/revenue/delete/:id", decodeUserToken, Revenue.deleteRevenue);
+
+
+// TOTAL BALANCE 
+
+routes.get("/total-balance-bill", decodeUserToken, TotalBalance.calculateTotalBalanceBill);
+routes.get("/total-balance-expense", decodeUserToken, TotalBalance.calculateTotalBalanceExpense);
+routes.get("/total-balance-revenue", decodeUserToken, TotalBalance.calculateTotalBalanceRevenue);
 
 export default routes;
