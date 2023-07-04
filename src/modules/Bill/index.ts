@@ -155,7 +155,7 @@ export = {
         deleted_at: null,
       };
 
-      const response = await prisma.tb_bill.findMany({
+      const resp = await prisma.tb_bill.findMany({
         where: {
           id_author: userData?.id,
           deleted_at: null,
@@ -168,6 +168,30 @@ export = {
         },
       });
 
+      // Mapear as despesas e calcular o saldo total de cada conta
+
+      //CRIAR A CONDIÇÃO QUE SÓ VAI SOMAR AS RECEITAS OU SUBTRAIR AS DESPESAS 
+      // SE O STATUS DELAS FOREM TRUE
+    const response = resp.map((bill) => {
+      const expensesBalance = bill.expenses.reduce(
+        (total, expense) => total + (expense.balance ?? 0),
+        0
+      );
+
+      const revenuesBalance = bill.revenues.reduce(
+        (total, revenue) => total + (revenue.balance ?? 0),
+        0
+      );
+
+      const billTotal = (bill.balance ?? 0) + revenuesBalance - expensesBalance;
+
+      return {
+        ...bill,
+        expensesBalance,
+        revenuesBalance,
+        billTotal,
+      };
+    });
       res.status(200).send({ success: true, response });
     } catch (error: any) {
       console.log(error);
