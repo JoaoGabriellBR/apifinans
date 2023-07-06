@@ -1,9 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 
-// No momento que a pessoa adicionar um Nova Despesa. Averiguar se ela possui uma CONTA. Caso não possua. Ao criar a despesa criar automaticamente uma conta Carteira!
-// Adicionar blocos Try catch a todas as funções.
-
 const prisma = new PrismaClient();
 
 const userWithoutPassword = {
@@ -133,16 +130,16 @@ export = {
         include: {
           author: { select: userWithoutPassword },
           tb_bill: {
-            select: { description: true }
+            select: { description: true },
           },
         },
       });
-      
-     const response = resp.map((expense) => ({
-       ...expense,
-       bill: expense?.tb_bill?.description || null,
-       tb_bill: undefined, // Remove o objeto tb_bill do resultado principal
-     }));
+
+      const response = resp.map((expense) => ({
+        ...expense,
+        bill: expense?.tb_bill?.description || null,
+        tb_bill: undefined, // Remove o objeto tb_bill do resultado principal
+      }));
 
       res.status(200).send({ success: true, response });
     } catch (error: any) {

@@ -168,30 +168,33 @@ export = {
         },
       });
 
-      // Mapear as despesas e calcular o saldo total de cada conta
+      const response = resp.map((bill) => {
+        const expensesBalance = bill.expenses.reduce((total, expense) => {
+          if (expense.status) {
+            return total + (expense.balance ?? 0);
+          } else {
+            return total;
+          }
+        }, 0);
 
-      //CRIAR A CONDIÇÃO QUE SÓ VAI SOMAR AS RECEITAS OU SUBTRAIR AS DESPESAS 
-      // SE O STATUS DELAS FOREM TRUE
-    const response = resp.map((bill) => {
-      const expensesBalance = bill.expenses.reduce(
-        (total, expense) => total + (expense.balance ?? 0),
-        0
-      );
+        const revenuesBalance = bill.revenues.reduce((total, revenue) => {
+          if (revenue.status) {
+            return total + (revenue.balance ?? 0);
+          } else {
+            return total;
+          }
+        }, 0);
 
-      const revenuesBalance = bill.revenues.reduce(
-        (total, revenue) => total + (revenue.balance ?? 0),
-        0
-      );
+        const billTotal =
+          (bill.balance ?? 0) + revenuesBalance - expensesBalance;
 
-      const billTotal = (bill.balance ?? 0) + revenuesBalance - expensesBalance;
-
-      return {
-        ...bill,
-        expensesBalance,
-        revenuesBalance,
-        billTotal,
-      };
-    });
+        return {
+          ...bill,
+          expensesBalance,
+          revenuesBalance,
+          billTotal,
+        };
+      });
       res.status(200).send({ success: true, response });
     } catch (error: any) {
       console.log(error);
