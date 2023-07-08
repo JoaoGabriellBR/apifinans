@@ -192,50 +192,33 @@ export = {
     }
   },
 
-  async login(req: Request, res: Response) {
+  async login({ body: { email, password } }: Request, res: Response) {
+    const statusError = (status: any, error: any) => {
+      res.status(status).send({ error: error });
+    };
     try {
-      const { email, password } = req.body;
-      const emailUser = email.toLowerCase();
-
-      if (!email) {
-        return res.status(400).send({ error: "Preencha o campo de e-mail." });
-      }
-
-      if (!password) {
-        return res.status(400).send({ error: "Preencha o campo de senha." });
-      }
+      if (!email || !password)
+        return statusError(400, "Preencha os campos de e-mail e senha.");
 
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailPattern.test(email)) {
-        return res.status(400).send({ error: "Digite um e-mail válido." });
-      }
+      if (!emailPattern.test(email))
+        return statusError(400, "Digite um e-mail válido.");
 
-      const user = await prisma.tb_user.findFirst({
-        where: { email: emailUser },
-      });
+      const user = await prisma.tb_user.findFirst({ where: { email } });
+      if (!user) return statusError(401, "Usuário não encontrado.");
 
-      if (!user || user.deleted_at !== null)
-        return res.status(401).send({ error: "Usuário não encontrado!" });
+      const isPasswordCorrect = await bcrypt.compare(password, user.password);
+      if (!isPasswordCorrect) return statusError(401, "Senha incorreta.");
 
-      if (!(await bcrypt.compare(password, user.password)))
-        return res.status(401).send({ error: "Senha incorreta!" });
-
-      const userWithoutPasssword = await prisma.tb_user.findFirst({
-        where: { email: emailUser },
-        select: {
-          id: true,
-          email: true,
-          password: false,
-        },
+      const response = await prisma.tb_user.findFirst({
+        where: { email, deleted_at: null },
+        select: userWithoutPasssword,
       });
 
       const token = jwt.sign({ ...user }, secretKey as Secret);
-      res.status(200).send({ token, user: userWithoutPasssword });
+      res.status(200).send({ token, user: response });
     } catch (error: any) {
-      console.log(error);
-      return res
-        .status(500)
-        .send({ error: "Não foi possível realizar o login." });
+      return statusError(500, "Não foi possível realizar o login.");
     }
   },
 };
